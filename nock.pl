@@ -33,6 +33,7 @@ binary_address([_|X2], Acc, N, R) :-
     binary_address(X2, N1, N, R).
 
 binary_address(Tree, N, R) :-
+    integer(N),
     N #> 0,
     binary_address(Tree, 1, N, R).
 
@@ -138,7 +139,7 @@ nock(Subject, [9|[B|C]], Result) :-
 
 %%
 %%
-%% PLACEHOLDER RULE 
+%% PLACEHOLDER RULE 11
 %%
 %%
 
@@ -175,7 +176,7 @@ doc(nock(_, [[_|_]|_], _), "Nested Programs").
 
 % ?- lookup(nock(Subject, Program, Result), Doc, Body).
 
-% ?- nock(5, [X, 4, 0|1], 7).
+% ?- nock(5, [X, X, 0|1], 7).
 
 % ?- prog_length([2, [0|1], 1, 1|7], 1).
 
