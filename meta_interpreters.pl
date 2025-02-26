@@ -11,13 +11,14 @@ elem(product(S1, S2), E) :-
 
 elem(intersection(S1, S2), E) :- elem(S1, E), elem(S2, E).
 
+% ?- elem(X, 5).
 
 mi_bfs(Goal, [true-Path|_]) :- reverse(Path, [Goal|_]).
 
-mi_bfs(Goal, [Clause-Path|Subgoals]) :-
-    Clause \== true,
-    findall(Body-[Clause|Path], (clause(Clause, Body), \+ member(Clause, Body)), Subgoals1),
-    append(Subgoals, Subgoals1, NewSubgoals),
+mi_bfs(Goal, [Subgoal-Path|Subgoals]) :-
+    Subgoal \== true,
+    findall(Body-[Subgoal|Path], (clause(Subgoal, Body)), ExtendedSubgoals),
+    append(Subgoals, ExtendedSubgoals, NewSubgoals),
     mi_bfs(Goal, NewSubgoals).
 
 mi_bfs(Goal, [_|Bs]) :- mi_bfs(Goal, Bs).
@@ -26,31 +27,19 @@ mi_bfs(Goal) :-
     mi_bfs(Goal, [Goal-[]]).
 
 
+
 % ?- clause(elem(X, 5), B).
 
 % ?- mi_bfs(elem(X, 5)).
-%@ X = y ;
-%@ X = z ;
-%@ X = union(y, _) ;
-%@ X = union(z, _) ;
-%@ X = union(_, y) ;
-%@ X = union(_, z) ;
-%@ X = union(union(y, _), _) ;
-%@ X = union(union(z, _), _) ;
-%@ X = union(union(_, y), _) ;
-%@ X = union(union(_, z), _) ;
-%@ X = union(_, union(y, _)) ;
-%@ X = union(_, union(z, _)) ;
-%@ X = union(_, union(_, y)) ;
-%@ X = union(_, union(_, z)) ;
-%@ X = union(union(union(y, _), _), _) .
+
+
 
 mi_dfs(Goal, [true-Path|_]) :- reverse(Path, [Goal|_]).
 
-mi_dfs(Goal, [Clause-Path|Subgoals]) :-
-    Clause \== true,
-    findall(Body-[Clause|Path], (clause(Clause, Body), \+ member(Clause, Body)), Subgoals1),
-    append(Subgoals1, Subgoals, NewSubgoals),
+mi_dfs(Goal, [Subgoal-Path|Subgoals]) :-
+    Subgoal \== true,
+    findall(Body-[Subgoal|Path], (clause(Subgoal, Body)), ExtendedSubgoals),
+    append(ExtendedSubgoals, Subgoals, NewSubgoals),
     mi_dfs(Goal, NewSubgoals).
 
 mi_dfs(Goal, [_|Bs]) :- mi_dfs(Goal, Bs).
@@ -59,22 +48,10 @@ mi_dfs(Goal) :-
     mi_dfs(Goal, [Goal-[]]).
 
 
+
 % ?- clause(elem(X, 5), B).
 
 % ?- mi_dfs(elem(X, 5)).
-%@ X = y ;
-%@ X = z ;
-%@ X = union(y, _) ;
-%@ X = union(z, _) ;
-%@ X = union(union(y, _), _) ;
-%@ X = union(union(z, _), _) ;
-%@ X = union(union(union(y, _), _), _) ;
-%@ X = union(union(union(z, _), _), _) ;
-%@ X = union(union(union(union(y, _), _), _), _) ;
-%@ X = union(union(union(union(z, _), _), _), _) .
-
-
-
 
 
 
