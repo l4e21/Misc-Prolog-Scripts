@@ -77,6 +77,20 @@ valid_entry(entry(_Yr/_Month/_Day, StartHr:StartMin, EndHr:EndMin, _Info)) :-
 
 % ?- member(Hr1, [9, 11]), T1 = Hr1:Min1, T2 = Hr2:Min2, snap:valid_time(T1), snap:valid_time(T2), snap:time_delta(T1, 0:30, T2), E = entry(2025/3/19, T1, T2, "Buy Soybeans"), snap:valid_entry(E), label([Min1, Min2]), \+ snap:overlapping_entry(E, E2).
 
+%% We can also conditionally add conditional events!!!!!
+
+% ?- assertz(snap:entry(2025/3/D, 13:50, 17:20, "Board Games") :- rainy(2025/3/D)).
+%@ true.
+
+% ?- assertz(rainy(2025/3/18)).
+%@ true.
+
+% ?- snap:entry(2025/3/17, S, E, "Board Games").
+%@ false.
+
+% ?- snap:entry(2025/3/18, S, E, "Board Games").
+%@ S = 13:50,
+%@ E = 17:20.
 
 % ?- snap:overlapping_entry(entry(_/_/_, 11:35, 12:45, _), E2).
 
