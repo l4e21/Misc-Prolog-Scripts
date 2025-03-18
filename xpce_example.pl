@@ -45,6 +45,7 @@ layoutdemo2(D, W, H) :-
 
 % ?- manpce.
 
+%% Connecting stuff together
 graph_example :-
     new(D, picture("Graph Example")),
     send(D, display, new(B1, box(200, 200)), point(20, 20)),
@@ -57,8 +58,6 @@ graph_example :-
     send(D, open).
 
 % ?- graph_example.
-%@ true.
-%@ true.
 
 
 %% Built-in tools using PCE
@@ -86,15 +85,6 @@ view(DirObj, F) :-
         send(V, load(FileObj)).
 
 % ?- fileviewer(".").
-
-editing :-
-    new(Dialog, dialog("Editor Test")),
-    get(Dialog, display, Display),
-    send(Display, layout, size(400, 400)),
-    send(Dialog, append(new(_, editor))),
-    send(Dialog, open).
-
-% ?- editing.
 
 % ?- get(dialog, class, Class), get(Class, send_methods, Methods).
 
@@ -149,3 +139,68 @@ ok :- writeln("TEST").
 
 
 % ?- writeln("Ok").
+
+example_term.
+example_term("a").
+
+%% Problem: Append-only, no prepend. Try device instead (like list_browser but uses graphicals instead of dict_items)
+repl_run(CmdAtom, Log) :-
+    %% Third arg is variable bindings
+    atom_to_term(CmdAtom, Cmd, Bindings),
+    %% term_string(Cmd, CmdStr),
+    catch((Cmd,
+           term_string(Bindings, BindingsStr),
+           (BindingsStr == "[]"
+           -> send(Log, append, "TRUE")
+           ; send(Log, append, BindingsStr))),
+          _,
+          send(Log, append, "FAIL")).
+
+repl :-
+    new(D, dialog("REPL")),
+    send(D, append, new(Align, dialog_group(aligner, group))),
+    send(Align, append, new(N1, text_item('REPL'))),
+    send(Align, append, new(Log, list_browser)),
+    send(Log, font, font(courier, roman, 14)),
+    send(D, append, button(enter, message(@prolog, repl_run, N1?selection, Log))),
+    send(D, default_button, enter),
+    send(D, open).
+
+% ?- repl.
+
+% ?- manpce(hash_table).
+
+%% Display all built-in icons
+%% Gross imperative loop required bc seemingly no way to just retrieve all hash table objs
+display_img(D, Img, I, J) :-
+    get(I, value, IVal),
+    get(J, value, JVal),
+    new(Bmp, bitmap(Img)),
+    send(Bmp, resize, 20, 20),
+    send(D, display, Bmp, point(IVal, JVal)),
+    (IVal > 250
+    -> I1 is 0, J1 is 40 + JVal
+    ; I1 is 40 + IVal, J1 is JVal),
+    send(I, value, I1),
+    send(J, value, J1).
+
+icons :-
+    new(D, picture),
+    new(StartX, number(0)),
+    new(StartY, number(0)),
+    send(@images, for_all, message(@prolog, display_img, D, @arg2, StartX, StartY)),
+    
+    get(@mark_image, size, S),
+    get(S, width, W),
+    writeln(W),
+    
+    send(D, open).
+
+% ?- icons.
+
+% ?- get(@mark_image, name, N).
+
+% ?- send(@images, for_all, message(@display, inform, @arg1)).
+
+% ?- manpce(number).
+
