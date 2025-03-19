@@ -72,32 +72,53 @@ valid_entry(entry(_Yr/_Month/_Day, StartHr:StartMin, EndHr:EndMin, _Info)) :-
     valid_time(EndHr:EndMin),    
     before(StartHr:StartMin, EndHr:EndMin).
 
+make_entry(Entry, PreConditions, PostConditions) :-
+    PreConditions,
+    valid_entry(Entry),
+    assertz(Entry :- PostConditions).
+
 % ?- snap:save("~/prolog/examplesnap.pl").
+
+% ?- use_module(library(clpfd)).
+
+% ?- snap:make_entry(entry(2025/3/19, 10:0, 11:40, "See Doctor"), true, true).
+
+% ?- snap:entry(Date, T1, T2, Info).
 
 % ?- assertz(snap:a).
 
-% ?- assertz(snap:entry(2025/3/19, 10:0, 11:40, "See Doctor")).
 
 
 %% We have to be very specific about the point at which we're instantiating the clpfd vars
 
 % ?- member(Hr1, [9, 11]), T1 = Hr1:Min1, T2 = Hr2:Min2, snap:valid_time(T1), snap:valid_time(T2), snap:time_delta(T1, 0:30, T2), E = entry(2025/3/19, T1, T2, "Buy Soybeans"), snap:valid_entry(E), label([Min1, Min2]), \+ snap:overlapping_entry(E, E2).
 
-%% We can also conditionally add conditional events!!!!!
+%% We can also conditionally add conditional events!
 
 % ?- assertz(snap:entry(2025/3/D, 13:50, 17:20, "Board Games") :- rainy(2025/3/D)).
-%@ true.
 
-% ?- assertz(rainy(2025/3/18)).
-%@ true.
+% ?- assertz(snap:rainy(2025/3/18)).
 
 % ?- snap:entry(2025/3/17, S, E, "Board Games").
-%@ false.
 
 % ?- snap:entry(2025/3/18, S, E, "Board Games").
-%@ S = 13:50,
-%@ E = 17:20.
 
 % ?- snap:overlapping_entry(entry(_/_/_, 11:35, 12:45, _), E2).
 
 % ?- entry(_, _, S, "b"), entry(_, E, _, "c"), make_entry(_, S, E, "D").
+
+%% Culminating in a beautiful general abstraction
+
+% ?- snap:make_entry(entry(2025/3/D, T1, 17:20, "Board Games"), (valid_time(T1), T1 = H1:M1, label([H1, M1])), rainy(2025/3/D)).
+
+
+%% Soft constraints example
+
+% ?- valid_time(Hr1:Min1), P1 in 0..1, P2 in 0..2, E = entry(2025/3/19, Hr1:Min1, 23:59, "Blah"), Hr1 in 7..15 #\/ P1 #= 1, Min1 in 0..10 #\/ P2 #= P1 + 1, P2 #< 2, label([Hr1, Min1]).
+
+
+%% Ideas for a GUI
+%% - Calendar Page
+%% - Daily Page
+%% - Make an entry page
+%% - Specifics 
