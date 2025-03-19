@@ -44,11 +44,17 @@ after(Hr1:Min1, Hr2: Min2) :-
 
 same_time(Hr:Min, Hr: Min).
 
-time_delta(Hr1:Min1, DeltaHr:DeltaMin, Hr2:Min2) :-
+
+time_delta(Hr1:Min1, Hr2:Min2, DeltaHr:DeltaMin) :-
+    valid_time(Hr1:Min1),
+    valid_time(Hr2:Min2),
+    valid_time(DeltaHr:DeltaMin),
+    
     Minutes #= Min1 + DeltaMin,
-    Hours #= Hr1 + DeltaHr + (Minutes // 60),
-    Min2 #= Minutes mod 60,
-    Hr2 #= Hours mod 24.
+    Minutes #>= 60 #<==> Carryover,
+    Hr2 #= Hr1 + DeltaHr + Carryover,
+    Min2 #= Minutes - 60*Carryover.
+    
 
 overlapping_times(StartHr1:StartMin1, EndHr1:EndMin1, StartHr2:StartMin2, EndHr2:EndMin2) :-
     (after(EndHr1:EndMin1, StartHr2:StartMin2), before(StartHr1:StartMin1, EndHr2:EndMin2)

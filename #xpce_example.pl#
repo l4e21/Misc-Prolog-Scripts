@@ -261,8 +261,6 @@ time_delta(Hr1:Min1, Hr2:Min2, DeltaHr:DeltaMin) :-
     
 
 % ?- time_delta(10:0, 12:30, H:M), label([M]).
-%@ H = 2,
-%@ M = 30.
 
 daily_calendar(Yr/Month/Day) :-
     PicWidth is 1800,
@@ -286,3 +284,4 @@ daily_calendar(Yr/Month/Day) :-
     send(Dialog, open).
     
 % ?- daily_calendar(1/1/1).
+%@ true.
