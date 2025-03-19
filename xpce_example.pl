@@ -204,3 +204,39 @@ icons :-
 
 % ?- manpce(number).
 
+month_name(1, "January").
+month_name(2, "February").
+
+days_in_month(1, 31).
+days_in_month(2, 28).
+
+monthly_calendar(_Yr/Month) :-
+    LineLength is 6,
+    PicWidth is 1800,
+    PicHeight is 1200,
+
+    new(Dialog, dialog),
+    send(Dialog, append, new(Picture, picture)),
+    send(Picture, size, size(PicWidth, PicHeight)),
+    send(Picture, display,  new(DeviceHeader, device)),
+    send(DeviceHeader, display, new(BoxHeader, box(PicWidth/1.2, 50)), point((PicWidth - PicWidth/1.2)/2, 0)),
+    send(BoxHeader, fill_pattern, colour(white)),
+    send(BoxHeader, pen, 2),
+    month_name(Month, MonthName),
+    send(DeviceHeader, display, new(_, text(MonthName)), point(PicWidth/2, 10)),
+    send(Picture, display, new(DeviceCalendar, device), point(0, 100)),
+    days_in_month(Month, Days),
+    forall(between(1, Days, Day),
+           (
+               Y is Day // LineLength,
+               X is Day mod LineLength,
+               send(DeviceCalendar, display, new(Box, box(300, 300)), point(X*350, Y*350)),
+               send(Box, fill_pattern, colour(white)),
+               send(Box, pen, 2),
+               send(DeviceCalendar, display, new(_, text(Day)), point(X*350 + 5, Y*350 + 5))
+           )),
+    send(Dialog, open).
+
+% ?- monthly_calendar(1/1).
+
+% ?- manpce(list_browser).
