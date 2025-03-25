@@ -61,7 +61,7 @@ graph_example :-
 
 
 %% Built-in tools using PCE
-% ?- manpce.
+% ?- manpce(line).
 % ?- emacs.
 
 %% Fileviewer
@@ -204,84 +204,39 @@ icons :-
 
 % ?- manpce(number).
 
-month_name(1, "January").
-month_name(2, "February").
+scrollbar_example :-
+new(F, frame('Scrollable Dialog')),
 
-days_in_month(1, 31).
-days_in_month(2, 28).
+% Scrollable window
+new(W, window),
+send(W, scrollbars, both),
+send(F, append, W),
 
-monthly_calendar(_Yr/Month) :-
-    LineLength is 6,
-    PicWidth is 1800,
-    PicHeight is 1200,
+% Dialog with auto layout
+new(D, dialog),
+send(D, append, new(E1, editor)),
+send(E1, size, size(1000, 500)),
+send(D, append, new(_, text_item(email))),
+send(D, append, new(E2, editor)),
+send(E2, size, size(1000, 500)),
+send(D, append, new(_, text_item(name))),
+send(D, append, new(E3, editor)),
+send(E3, size, size(1000, 500)),
+send(D, append, new(_, button(ok))),
+send(D, layout),
+send(D, compute),
+send(D, fit),
 
-    new(Dialog, dialog),
-    send(Dialog, append, new(Picture, picture)),
-    send(Picture, size, size(PicWidth, PicHeight)),
-    send(Picture, display,  new(DeviceHeader, device)),
-    send(DeviceHeader, display, new(BoxHeader, box(PicWidth/1.2, 50)), point((PicWidth - PicWidth/1.2)/2, 0)),
-    send(BoxHeader, fill_pattern, colour(white)),
-    send(BoxHeader, pen, 2),
-    month_name(Month, MonthName),
-    send(DeviceHeader, display, new(_, text(MonthName)), point(PicWidth/2, 10)),
-    send(Picture, display, new(DeviceCalendar, device), point(0, 100)),
-    days_in_month(Month, Days),
-    forall(between(1, Days, Day),
-           (
-               Y is Day // LineLength,
-               X is Day mod LineLength,
-               send(DeviceCalendar, display, new(Box, box(300, 300)), point(X*350, Y*350)),
-               send(Box, fill_pattern, colour(white)),
-               send(Box, pen, 2),
-               send(DeviceCalendar, display, new(_, text(Day)), point(X*350 + 5, Y*350 + 5))
-           )),
-    send(Dialog, open).
+% Get dialog size after layout
+%% get(D, area, area(_, _, Width, Height)),
 
-% ?- monthly_calendar(1/1).
+% Wrap dialog in device with explicit scrollable size
+%% new(Dev, device),
+%% send(Dev, display, D, point(0, 0)),
 
-% ?- manpce(list_browser).
-
-:- use_module(library(clpfd)).
-
-event(1/1/1, 10:0, 12:30, "Blah").
-
-valid_time(Hr:Min) :-
-    Hr in 0..23,
-    Min in 0..59.    
-
-time_delta(Hr1:Min1, Hr2:Min2, DeltaHr:DeltaMin) :-
-    valid_time(Hr1:Min1),
-    valid_time(Hr2:Min2),
-    valid_time(DeltaHr:DeltaMin),
-    
-    Minutes #= Min1 + DeltaMin,
-    Minutes #>= 60 #<==> Carryover,
-    Hr2 #= Hr1 + DeltaHr + Carryover,
-    Min2 #= Minutes - 60*Carryover.
-    
-
-% ?- time_delta(10:0, 12:30, H:M), label([M]).
-
-daily_calendar(Yr/Month/Day) :-
-    PicWidth is 1800,
-    PicHeight is 1200,
-    new(Dialog, dialog),
-    send(Dialog, append, new(Picture, picture)),
-    send(Picture, size, size(PicWidth, PicHeight)),
-    send(Picture, display,  new(DeviceHeader, device)),
-    send(DeviceHeader, display, new(BoxHeader, box(PicWidth/1.2, 50)), point((PicWidth - PicWidth/1.2)/2, 0)),
-    send(BoxHeader, fill_pattern, colour(white)),
-    send(BoxHeader, pen, 2),
-    send(DeviceHeader, display, new(_, text(Day)), point(PicWidth/2, 10)),
-    send(Picture, display, new(DeviceCalendar, device), point(0, 100)),
-    forall(between(1, 24, Hour),
-           send(DeviceCalendar, display, new(_, text(Hour)), point(0, Hour*120))),
-    forall(event(Yr/Month/Day, StartHr:StartMin, EndHr:EndMin, Info),
-           (time_delta(StartHr:StartMin, EndHr:EndMin, HrDiff:MinDiff),
-            send(DeviceCalendar, display, new(_, box(600, HrDiff*120 + MinDiff)), point(100, StartHr*120)),
-            send(DeviceCalendar, display, new(_, text(Info)), point(105, StartHr*120 + 5)))),
-    %% send(Dialog, append, button(next, message(@prolog, daily_calendar, Yr, Month, Day))),
-    send(Dialog, open).
-    
-% ?- daily_calendar(1/1/1).
+% Show in scrollable window
+send(W, display, D, point(0, 0)),
+send(F, open).
+% ?- manpce(area).
+% ?- scrollbar_example.
 %@ true.
