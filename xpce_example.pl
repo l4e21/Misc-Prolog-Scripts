@@ -133,6 +133,8 @@ keybinder :-
 ok :- writeln("TEST").
 
 % ?- keybinder.
+%@ true.
+%@ true.
 % ?- manpce.
 
 % ?- emacs.
@@ -239,4 +241,4 @@ send(W, display, D, point(0, 0)),
 send(F, open).
 % ?- manpce(area).
 % ?- scrollbar_example.
-%@ true.
+.
