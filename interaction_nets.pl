@@ -26,70 +26,96 @@
 
 %% which then gets compiled to the first using a reduction on = which is a special syntax operator
 
-%% net([arity, #0#1=3, #0#2=4, #0_+,
-%%      #1/3, ])
-
-%% evals to true with X = 7
-
-%% net([Rule|RuleRest], CompiledRules, [Vars|VarsRest]) :-
-%%     compile_rule(Rule, CompiledRules, CompiledRulesNew, Vars),
-%%     net(RuleRest, CompiledRest, VarsRest).
-
-%% Maybe equals does not count as a rule of its own
-
-%% add_assignments(_, []).
-%% add_assignments(Term, [N-V|AssignRest]) :-
-%%     arg(N, Term, V),
-%%     add_assignments(Term, AssignRest).
-
-%% compile_net_1(Rules, Terms) :-
-%%     length(Rules, L),
-%%     length(Terms, L),
-%%     compile_net_1(Rules, Terms, 1, L).
-
-%% compile_net_1(_, _, N, L) :-
-%%     N > L.
-
-%% compile_net_1(Rules, Terms, N, L) :-
-%%     N =< L,
-%%     nth1(N, Rules, Rule),
-%%     nth1(N, Terms, Term),
-%%     get_dict(assign, Rule, Assigns),
-%%     get_dict(name, Rule, Name),
-    
-%%     length(Assigns, Arity),
-%%     functor(Term, Name, Arity),
-%%     add_assignments(Term, Assigns),
-%%     N1 is N + 1,
-%%     compile_net_1(Rules, Terms, N1, L).
-
-gp_add(A, B, C) :- C is A + B.
-gp_minus(A, B, C) :- C is A - B.
+:- use_module(library(clpfd)).
 
 get_slot(Term, [], Term).
 get_slot(Term, [N|Address], Slot) :-
     nth1(N, Term, Slot1),
     get_slot(Slot1, Address, Slot).
 
-%% compile_net(Terms, Arrows, Result) :-
-%%     %% Perform unification
-%%     compile_net(Terms, Arrows),
-%%     %% maplist(=.., Result, Terms).
-
-compile_net(_, []).
-compile_net(Terms, [Slot1Address=Slot2Address|Arrows]) :-
+unify_slots(_, []).
+unify_slots(Terms, [Slot1Address=Slot2Address|Arrows]) :-
     get_slot(Terms, Slot1Address, Slot),
     get_slot(Terms, Slot2Address, Slot),
-    compile_net(Terms, Arrows).
+    unify_slots(Terms, Arrows).
 
-net([[gp_add, 3, 4, _],
+construct_program([T1], T2) :- T2 =.. T1.
+construct_program([T1|Terms], (T2,Rest)) :- T2 =.. T1, construct_program(Terms, Rest).
+
+compile_net(Name, Program) :-
+    net(Name, Fns, Arrows),
+    compile_net(Fns, Arrows, Program).
+
+compile_net(Fns, Arrows, Program) :-
+    unify_slots(Fns, Arrows),
+    construct_program(Fns, Program).
+
+induce(I, L, R) :- I -> L; R.
+%% induce(I, L, R) :- TermI =.. I, TermL =.. L, TermR =.. R, TermI -> TermL; R.
+
+gp_add(A, B, C) :- C #= A + B.
+gp_minus(A, B, C) :- C #= A - B.
+
+gp_gensym(Fn) :- gensym('gp_fn', Fn).
+
+def_pred(LHS, RHS) :-
+    assertz(LHS :- RHS).
+
+:- dynamic(net/3).
+
+net('Arithmetic',
+    [[gp_add, 3, 4, _],
      [gp_minus, 9, 2, _]],
-   [[1, 4]=[2, 4]]).
+    [
+        [1, 4]=[2, 4]
+    ]).
 
-% ?- net(Fns, Arrows), copy_term(Fns, Preds), compile_net(Preds, Arrows), maplist(=.., Program, Preds), maplist(call, Program).
-%@ Fns = [[gp_add, 3, 4, _], [gp_minus, 9, 2, _]],
-%@ Arrows = [[1, 4]=[2, 4]],
-%@ Preds = [[gp_add, 3, 4, 7], [gp_minus, 9, 2, 7]],
-%@ Program = [gp_add(3, 4, 7), gp_minus(9, 2, 7)] ;
-%@ false.
+net('Subnet',
+    [[compile_net, [[gp_add, 3, 4, _], [print, _], [nl]], [[1, 4]=[2, 2]], _],
+     [print, _],
+     [nl],
+     [call, _]],
+    [[1, 4]=[2, 2],
+     [1, 4]=[4, 2]]).
 
+net('recursion',
+    [[gp_gensym, _],
+     [=.., _, [_, _, _]],
+     [compile_net, [[succ, _, _]] , [], _],
+     [compile_net, [[=, _, _]], [], _],
+     [compile_net, [[induce, _, _, _]], [], _],
+     [compile_net, [[_, _, _]], [], _],
+     [def_pred, _, _],
+     [=.., _, [_, _, _]],
+     [call, _],
+     [print, _]],
+    
+    [[1, 2]=[2, 3, 1],
+     [2, 2]=[5, 2, 1, 3],
+     [2, 3, 1]=[6, 2, 1, 1],
+     [2, 3, 1]=[8, 3, 1],
+     [2, 3, 3]=[6, 2, 1, 3],
+     [2, 3, 2]=[3, 2, 1, 3],
+     [2, 3, 3]=[4, 2, 1, 3],
+     [3, 2, 1, 2]=[6, 2, 1, 2],
+     [3, 2, 1, 2]=[4, 2, 1, 2],
+     [3, 4]=[5, 2, 1, 2],
+     [4, 4]=[5, 2, 1, 4],
+     [5, 4]=[7, 3],
+     [6, 4]=[7, 2],
+     [8, 2]=[9, 2],
+     [8, 3, 3]=[10, 2]]).
+
+succ(1, 2).
+succ(2, 3).
+
+% ?- net('Arithmetic', Fns, Arrows), compile_net(Fns, Arrows, Program), Program.
+
+% ?- net('Subnet', Fns, Arrows), unify_slots(Fns, Arrows).
+
+% ?- net('Subnet', Fns, Arrows), compile_net(Fns, Arrows, Program), Program.
+
+% ?- compile_net('recursion', Program), Program, nl, print(Program), nl.
+%@ 3
+%@ gp_gensym(gp_fn1),gp_fn1(_10158,_10164)=..[gp_fn1,_10158,_10164],compile_net([[succ,_10200,_10158]],[],succ(_10200,_10158)),compile_net([[=,_10200,_10164]],[],_10200=_10164),compile_net([[induce,succ(_10200,_10158),gp_fn1(_10158,_10164),_10200=_10164]],[],induce(succ(_10200,_10158),gp_fn1(_10158,_10164),_10200=_10164)),compile_net([[gp_fn1,_10200,_10164]],[],gp_fn1(_10200,_10164)),def_pred(gp_fn1(_10200,_10164),induce(succ(_10200,_10158),gp_fn1(_10158,_10164),_10200=_10164)),gp_fn1(1,3)=..[gp_fn1,1,3],call(gp_fn1(1,3)),print(3)
+%@ Program = (gp_gensym(gp_fn1), gp_fn1(_A, _B)=..[gp_fn1, _A, _B], compile_net([[succ, _C, _A]], [], succ(_C, _A)), compile_net([[=, _C, _B]], [], _C=_B), compile_net([[induce, succ(..., ...)|...]], [], induce(succ(_C, _A), gp_fn1(_A, _B), _C=_B)), compile_net([[gp_fn1|...]], [], gp_fn1(_C, _B)), def_pred(gp_fn1(_C, _B), induce(succ(..., ...), gp_fn1(..., ...), ... = ...)), gp_fn1(..., ...)=..[...|...], call(...), print(...)) 
