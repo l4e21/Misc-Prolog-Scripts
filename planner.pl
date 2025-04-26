@@ -1,4 +1,4 @@
-:- module(planner, [now/1, finish_task/2, unfinished_task/2, task/2]).
+:- module(planner, [now/1, finish_task/2, unfinished_task/2, task/2, done_task/2, added_task/2]).
 
 :- use_module(library(clpfd)).
 
@@ -75,6 +75,8 @@ finish_task(Y/M/D, Task) :-
     unfinished_task(Y/M/D, Task),
     assertz(done_task(Y/M/D, Task)).
 
+% ?- use_module(library(clpfd)).
+
 % ?- task(2024/12/31, T).
 
 % ?- task(2025/4/26, Task).
@@ -88,3 +90,15 @@ finish_task(Y/M/D, Task) :-
 % ?- task(2025/M/D, T).
 
 % ?- qsave_program("planner").
+
+% ?- between(24, 31, D), assertz(planner:added_task(2025/4/D, 'Walk Doggy')).
+
+% ?- assertz(planner:added_task(2025/4/D, 'Walk Doggy')).
+
+% ?- planner:added_task(2025/4/26, Task).
+
+% ?- planner:unfinished_task(2025/4/D, Task).
+% ?- planner:unfinished_task(2025/4/26, Task).
+% ?- planner:unfinished_task(2025/3/22, Task).
+
+% ?- assertz(planner:added_task(2025/4/D, 'Walk Doggy') :- between(24, 31, D)).
