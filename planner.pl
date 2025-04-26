@@ -3,9 +3,12 @@
                     tomorrow/2,
                     before/2,
                     date_between/3,
-                    done_task/2,
                     added_task/2,
                     add_task/2,
+                    active_task/3,
+                    unfinished_task/3,
+                    done_task/2,
+                    finish_task/2,
                     subtask/2]).
 
 :- use_module(library(clpfd)).
