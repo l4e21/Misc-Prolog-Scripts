@@ -1,14 +1,13 @@
+:- module(planner, [now/1, finish_task/2, unfinished_task/2, task/2]).
 
 :- use_module(library(clpfd)).
 
-now(Yr/Month/Day, Hr:Min) :-
+now(Yr/Month/Day) :-
     get_time(Stamp),
     stamp_date_time(Stamp, DateTime, local),
     date_time_value(year, DateTime, Yr),
     date_time_value(month, DateTime, Month),
-    date_time_value(day, DateTime, Day),
-    date_time_value(hour, DateTime, Hr),
-    date_time_value(minute, DateTime, Min).
+    date_time_value(day, DateTime, Day).
 
 month_name(1, "January").
 month_name(2, "February").
@@ -57,33 +56,35 @@ tomorrow(Year1/Month1/Day1, Year2/Month2/Day2) :-
 :- dynamic added_task/2.
 :- dynamic done_task/2.
 
-tasks(2024/_/_, []).
-
-tasks(Y/M/D, Tasks) :-
+task(Y/M/D, Task) :-
     Y #> 2024,
-    %% Manually added tasks
-    findall(Task, added_task(Y/M/D, Task), AddedTasks),
+    added_task(Y/M/D, Task).
 
-    %% Plus carry over tasks from yesterday
+task(Y/M/D, Task) :-
+    Y #> 2024,
+    \+ added_task(Y/M/D, Task),
     tomorrow(YesterYear/YesterMonth/YesterDay, Y/M/D),
-    unfinished_tasks(YesterYear/YesterMonth/YesterDay, CarryoverTasks),
-    append(CarryoverTasks, AddedTasks, Tasks).
+    task(YesterYear/YesterMonth/YesterDay, Task),
+    \+ done_task(YesterYear/YesterMonth/YesterDay, Task).
 
-unfinished_tasks(Y/M/D, Tasks) :-
-    tasks(Y/M/D, AllTasks),
-    exclude(done_task(Y/M/D), AllTasks, Tasks).
+unfinished_task(Y/M/D, Task) :-
+    task(Y/M/D, Task),
+    \+ done_task(Y/M/D, Task).
 
 finish_task(Y/M/D, Task) :-
-    tasks(Y/M/D, Tasks),
-    member(Task, Tasks),
+    unfinished_task(Y/M/D, Task),
     assertz(done_task(Y/M/D, Task)).
 
-% ?- tasks(2024/12/31, []).
+% ?- task(2024/12/31, T).
 
-% ?- tasks(2025/1/1, Tasks).
+% ?- task(2025/4/26, Task).
 
-% ?- unfinished_tasks(2025/1/1, Tasks).
+% ?- unfinished_task(2025/4/26, Task).
 
-% ?- assertz(added_task(2025/1/1, 'Walk doggy')).
+% ?- assertz(added_task(2025/4/26, 'Walk doggy')).
 
-% ?- finish_task(2025/1/1, 'Walk doggy').
+% ?- finish_task(2025/4/26, 'Walk doggy').
+
+% ?- task(2025/M/D, T).
+
+% ?- qsave_program("planner").
