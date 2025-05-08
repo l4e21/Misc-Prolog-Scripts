@@ -1,5 +1,6 @@
-
 :- use_module(library(socket)).
+
+%% Example of TCP p2p sockets
 
 :- dynamic me/2.
 
