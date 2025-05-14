@@ -213,12 +213,102 @@ decode_one(Xs, N-X, Remaining) :-
 
 % ?- decodings([1, 1, 2, 3], Xs).
 
-
-%% Duplicate elements of a list
-
 % ?- decode_one(Xs, 1-4, [2, 3]).
 
 % ?- decode_one([1,1,2,3], N-X, R).
 
-%% This is why decoding can't be fully bidirectional in this case
+% This is why decoding can't be fully bidirectional in this case
+
+%% Duplicate the elements of a list
+
+dupli([], []).
+dupli([X|Xs], [X, X|Ys]) :- dupli(Xs, Ys).
+
+% ?- dupli([1, 2, 3], Xs).
+
+%% Duplicate elements of a list a given number of times
+
+dupli([], _, []).
+dupli([X|Xs], N, Ys) :-
+    length(DupedX, N),
+    maplist(=(X), DupedX),
+    dupli(Xs, N, Ys1),
+    append(DupedX, Ys1, Ys).
+
+repeatit(X, 1, [X]) :- !.
+repeatit(X, N, [X|Xs]) :-
+    N1 #= N - 1,
+    repeatit(X, N1, Xs).
+
+repeat2(X, N, L) :-
+    maplist(=(X), L),
+    length(L, N).
+
+
+% Note which is faster, compiler does not fuse map and length
+% ?- call_time(repeatit(1, 7, L), D).
+% ?- call_time(repeat2(1, 7, L), D).
+
+% Drop every nth element of a list
+
+drop(N, L1, L2) :- drop(N, 0, L1, L2).
+
+drop(_, _, [], []) :- !.
+drop(N, N, [_|L1], L2) :- drop(N, 0, L1, L2).
+drop(N, I, [X|L1], [X|L2]) :-
+    I #\= N,
+    I1 #= I + 1,
+    drop(N, I1, L1, L2).
+
+% ?- drop(2, [1, 2, 3, 4, 5, 6], L).
+
+%% Split a list into two parts, given the length of the first part
+
+split(L, 0, [], L).
+split([X|L], N, [X|L1], L2) :-
+    N #> 0,
+    N1 #= N - 1,
+    split(L, N1, L1, L2).
+
+% ?- split([1, 2, 3, 4], 3, L1, L2).
+
+%% Extract a slice from a list
+
+slice(0, 0, [X|_], [X]).
+slice(0, End, [X|L], [X|S]) :-
+    End #> 0,
+    End1 #= End - 1,
+    slice(0, End1, L, S).
+slice(Start, End, [_|L], S) :-
+    Start #> 0,
+    End #> Start,
+    Start1 #= Start - 1,
+    End1 #= End - 1,
+    slice(Start1, End1, L, S).
+
+% ?- slice(1, 3, [1, 2, 3, 4, 5], S).
+
+%% Rotate a list N places to the left
+
+rotate(L1, X, L2) :-
+    length(L1, Len),
+    ModX #= X mod Len,
+    split(L1, ModX, Start, Rest),
+    append(Rest, Start, L2).
+
+% ?- rotate([1, 2, 3, 4, 5, 6], 7, L).
+
+
+%% Remove the K'th element of a list
+
+remove_at([X|L], 0, X, L).
+remove_at([_|L], N, X, R) :-
+    N #> 0,
+    N1 #= N - 1,
+    remove_at(L, N1, X, R).
+
+% ?- remove_at([1, 2, 3, 4], 2, X, R).
+    
+%% Insert an element at a given position of a list
+
 
