@@ -40,7 +40,15 @@ radical(big).
 radical(woman).
 radical(child).
 radical(roof).
-
+radical(inch).
+radical(small).
+radical(lame).
+radical(corpse).
+radical(sprout).
+radical(mountain).
+radical(river).
+radical(work).
+radical(self).
 
 char(one, 一).
 char(line, 丨).
@@ -82,6 +90,15 @@ char(big, 大).
 char(woman, 女).
 char(child, 子).
 char(roof, 宀).
+char(inch, 寸).
+char(small, 小).
+char(lame, 尢).
+char(corpse, 尸).
+char(sprout, 屮).
+char(mountain, 山).
+char(river, 川).
+char(work, 工).
+char(self, 己).
 
 pinyin(one, "yī").
 pinyin(line, "shù").
@@ -123,6 +140,14 @@ pinyin(big, "dà").
 pinyin(woman, "nǚ").
 pinyin(child, "zǐ").
 pinyin(roof, "mián").
+pinyin(inch, "cùn").
+pinyin(small, "xiǎo").
+pinyin(lame, "yóu").
+pinyin(corpse, "shī").
+pinyin(sprout, "chè").
+pinyin(mountain, "shān").
+pinyin(river, "chuān").
+pinyin(work, "gōng").
+pinyin(self, "jǐ").
 
-
-% ?- pinyin(ice, C).
+% ?- char(X, Y), pinyin(X, Z).
