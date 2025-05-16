@@ -311,4 +311,3 @@ remove_at([_|L], N, X, R) :-
     
 %% Insert an element at a given position of a list
 
-
