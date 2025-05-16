@@ -1,10 +1,9 @@
-:- module(structs, []).
+:- module(structs, [make_obj/2, class/2, set_slot/3]).
 
 :- dynamic(object_counter/1).
+:- dynamic(class/2).
 
 object_counter(1).
-
-:- dynamic(struct/1).
 
 add_slots(_, _, []) :- !.
 add_slots(ObjId, Type, [(SlotName, SlotValue)|Slots]) :-
@@ -18,12 +17,21 @@ make_obj(Type, Slots) :-
     object_counter(Counter),
     atom_concat(o, Counter, ObjId),
     Existence =.. [Type, ObjId],
-    asserta(Existence),
     Counter1 is Counter + 1,
     retractall(object_counter(_)),
+    asserta(Existence),
     asserta(object_counter(Counter1)),
+    asserta(class(ObjId, Type)),
     add_slots(ObjId, Type, Slots).
 
+set_slot(ID, SlotName, SlotVal) :-
+    class(ID, Class),
+    atom_concat(Class, '_', Prefix),
+    atom_concat(Prefix, SlotName, SlotPredName),
+    SlotPred =.. [SlotPredName, ID, SlotVal],
+    SlotPredToRetract =.. [SlotPredName, ID, _],
+    retractall(SlotPredToRetract),
+    asserta(SlotPred).
 
 %% card(o1).
 %% card_name(o1, a).
@@ -35,6 +43,8 @@ make_obj(Type, Slots) :-
 
 % ?- card(X).
 
-% ?- name(o1, Y).
-
 % ?- card_name(A, B).
+
+% ?- set_slot(o1, type, water).
+
+% ?- card_type(A, B).
