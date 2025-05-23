@@ -33,6 +33,18 @@ set_slot(ID, SlotName, SlotVal) :-
     retractall(SlotPredToRetract),
     asserta(SlotPred).
 
+get_slot(ID, SlotName, SlotVal) :-
+    class(ID, Class),
+    atom_concat(Class, '_', Prefix),
+    atom_concat(Prefix, SlotName, SlotPredName),
+    SlotPred =.. [SlotPredName, ID, SlotVal],
+    SlotPred.
+
+find_obj(Type, ObjId) :-
+    Existence =.. [Type, ObjId],
+    Existence.
+
+
 %% card(o1).
 %% card_name(o1, a).
 %% card_type(o1, water).
@@ -40,11 +52,15 @@ set_slot(ID, SlotName, SlotVal) :-
 % ?- object_counter(N).
 
 % ?- make_obj(card, [(name, a)]).
+%@ true.
 
 % ?- card(X).
 
 % ?- card_name(A, B).
 
 % ?- set_slot(o1, type, water).
+%@ false.
 
 % ?- card_type(A, B).
+% ?- X = [1,2|[1, 2]].
+%@ X = [1, 2, 1, 2].
