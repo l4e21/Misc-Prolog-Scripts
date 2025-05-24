@@ -1,46 +1,64 @@
 :- use_module(library(clpfd)).
 
 :- dynamic(obj_counter/1).
-:- dynamic(slot/4).
+:- dynamic(meta_obj/2).
+:- dynamic(slot/2).
 
-obj_counter(1).
+obj_counter(0).
 
-slot(0, 0, make_obj(Slots, Lamport),
-     (obj_counter(ID),
-      Counter1 #= ID + 1,
-      retractall(obj_counter(Counter1)),
-      asserta(obj_counter(Counter1)),
-      
-      asserta(slot(ID, Lamport, version(Lamport), true)),
-      call_slot(0, 0, make_slots(ID, Lamport, Slots)))).
+make_obj(0, Slots) :-
+    obj_counter(Counter),
+    ID #= Counter + 1,
+    retractall(obj_counter(Counter)),
+    asserta(obj_counter(ID)),
+    
+    asserta(meta_obj(ID, 0)),
+    asserta(slot(ID, meta_obj/2)),
+    make_slots(0, ID, Slots).
 
-slot(0, 0, make_slots(_, _, []),
-     true).
-slot(0, 0, make_slots(ID, Lamport, [SlotHead:-SlotBody|Slots]),
-     (Slot = slot(ID, Lamport, SlotHead, SlotBody),
-      asserta(Slot),
-      call_slot(0, 0, make_slots(ID, Lamport, Slots)))).
+make_slots(0, _, []).
+make_slots(0, ID, [SlotHead:-SlotBody|Slots]) :-
+    SlotHead =.. [Name, ID|_],
+    functor(SlotHead, Name, Arity),
+    asserta(SlotHead:-SlotBody),
+    asserta(slot(ID, Name/Arity)),
+    make_slots(0, ID, Slots).
 
-slot(0, 0, get_slots(ID, Lamport, Slots),
-    findall(SlotHead:-SlotBody, slot(ID, Lamport, SlotHead, SlotBody), Slots)).
+slots(0, ID, Slots) :-
+    findall(Name/Arity, slot(ID, Name/Arity), Slots).
 
-call_slot(0, 0, SlotHead) :-
-    slot(0, 0, SlotHead, SlotBody),
-    SlotBody.
+call_slot(0, SlotHead) :-
+    SlotHead =.. [_, ID|_],
+    meta_obj(ID, 0),
+    SlotHead.
+call_slot(0, SlotHead) :-
+    SlotHead =.. [_, ID|_],
+    meta_obj(ID, MetaID),
+    not(MetaID == 0),
+    call_slot(MetaID, SlotHead).
 
+% ?- make_obj(0, [make_obj(MetaID):-(asserta(slot(baloneyID, baloney/2)), asserta(baloney(baloneyID, baloneyVal)))]).
+%@ MetaID = 1.
 
-% ?- call_slot(0, 0, make_obj([name(a):-true], 1)).
+% ?- slot(X, Y).
+%@ X = 1,
+%@ Y = make_obj/1 ;
+%@ X = 1,
+%@ Y = meta_obj/2.
+
+% ?- meta_obj(X, Y).
+%@ X = 1,
+%@ Y = 0.
+
+% ?- call_slot(0, make_obj(1)).
 %@ true ;
 %@ false.
 
-% ?- slot(A, B, name(a), D).
-%@ A = B, B = 1,
-%@ D = true.
+% ?- slots(0, X, S).
+%@ S = [baloney/2, make_obj/1, meta_obj/2].
 
-% ?- call_slot(0, 0, get_slots(1, 1, S)).
-%@ S = [(name(a):-true), (version(1):-true)].
+% ?- baloney(X, Y).
+%@ X = baloneyID,
+%@ Y = baloneyVal.
 
-% ?- call_slot(0, 0, get_slots(0, 0, S)).
-%@ S = [(make_obj(_A, _B):-obj_counter(_C), _D#=_C+1, retractall(obj_counter(_D)), asserta(obj_counter(_D)), asserta(slot(_C, _B, version(...), true)), call_slot(0, 0, make_slots(_C, _B, _A))), (make_slots(_, _, []):-true), (make_slots(_E, _F, [(_G:-_H)|_I]):-_J=slot(_E, _F, _G, _H), asserta(_J), call_slot(0, 0, make_slots(_E, _F, _I))), (get_slots(_K, _L, _M):-findall((_N:-_O), slot(_K, _L, _N, _O), _M))].
-
-% ?- call_slot(0, 0, update_slot(1, name(a)))
+% ?- make_obj(0, [
