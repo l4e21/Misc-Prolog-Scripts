@@ -6,12 +6,14 @@
 
 obj_counter(0).
 
+increase_obj_counter(NewCounter) :-
+    obj_counter(OldCounter),
+    NewCounter #= OldCounter + 1,
+    retractall(obj_counter(OldCounter)),
+    asserta(obj_counter(NewCounter)).
+
 make_obj(0, Slots) :-
-    obj_counter(Counter),
-    ID #= Counter + 1,
-    retractall(obj_counter(Counter)),
-    asserta(obj_counter(ID)),
-    
+    increase_obj_counter(ID),
     asserta(meta_obj(ID, 0)),
     asserta(slot(ID, meta_obj/2)),
     make_slots(0, ID, Slots).
@@ -38,27 +40,15 @@ call_slot(0, SlotHead) :-
     call_slot(MetaID, SlotHead).
 
 % ?- make_obj(0, [make_obj(MetaID):-(asserta(slot(baloneyID, baloney/2)), asserta(baloney(baloneyID, baloneyVal)))]).
-%@ MetaID = 1.
 
 % ?- slot(X, Y).
-%@ X = 1,
-%@ Y = make_obj/1 ;
-%@ X = 1,
-%@ Y = meta_obj/2.
 
 % ?- meta_obj(X, Y).
-%@ X = 1,
-%@ Y = 0.
 
 % ?- call_slot(0, make_obj(1)).
-%@ true ;
-%@ false.
 
 % ?- slots(0, X, S).
-%@ S = [baloney/2, make_obj/1, meta_obj/2].
 
 % ?- baloney(X, Y).
-%@ X = baloneyID,
-%@ Y = baloneyVal.
 
-% ?- make_obj(0, [
+% ?- make_obj(0, [make_obj(MetaID, Slots):-()])
