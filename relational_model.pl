@@ -11,8 +11,6 @@ attribute_index(RelVar, Name, Idx) :-
     rel_head(RelVar, Attributes),
     nth0(Idx, Attributes, attribute(Name, _)).
 
-% ?- attribute_index(s, N, I).
-
 attribute_indices(RelVar, Attributes, Indices) :-
     maplist(attribute_index(RelVar), Attributes, Indices).
 
@@ -44,17 +42,17 @@ validate_attributes([X|Xs], [attribute(_, Type)|Attributes]) :-
     call(Type, X),
     validate_attributes(Xs, Attributes).
 
-add_to_relation(RelVar, Tup) :-
-    rel_head(RelVar, Head),
-    rel_key_indices(RelVar, Indices),
+%% add_to_relation(RelVar, Tup) :-
+%%     rel_head(RelVar, Head),
+%%     rel_key_indices(RelVar, Indices),
     
-    %% rel_key_index(RelVar, KeyIdx),
-    %% nth0(KeyIdx, Tup, KeyVal),
-    length(Head, L),
-    length(Tup, L),
-    %% not((rel_body(RelVar, Body), nth0(KeyIdx, Body, KeyVal))),
-    validate_attributes(Tup, Head),
-    assertz(rel_body(RelVar, Tup)).
+%%     %% rel_key_index(RelVar, KeyIdx),
+%%     %% nth0(KeyIdx, Tup, KeyVal),
+%%     length(Head, L),
+%%     length(Tup, L),
+%%     %% not((rel_body(RelVar, Body), nth0(KeyIdx, Body, KeyVal))),
+%%     validate_attributes(Tup, Head),
+%%     assertz(rel_body(RelVar, Tup)).
 
 % ?- call(integer, 3).
 

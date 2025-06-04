@@ -133,8 +133,6 @@ keybinder :-
 ok :- writeln("TEST").
 
 % ?- keybinder.
-%@ true.
-%@ true.
 % ?- manpce.
 
 % ?- emacs.
@@ -241,4 +239,28 @@ send(W, display, D, point(0, 0)),
 send(F, open).
 % ?- manpce(area).
 % ?- scrollbar_example.
-.
+
+:- use_module(library('plot/plotter')).
+:- use_module(library(autowin)).
+
+plot_function(_) :-
+    To is 10,
+    new(W, auto_sized_picture('Plotter demo')),
+    send(W, display, new(P, plotter)),
+    send(P, axis, plot_axis(x, 0, To, @default, 300)),
+    send(P, axis, plot_axis(y, 0, To*2, @default, 200)),
+    send(P, graph, new(G, plot_graph)),
+    plot_function(G, 0, To),
+    send(W, open).
+
+plot_function(_G, X, To) :-
+    X >= To, !.
+plot_function(G, X, To) :-
+    Y is X * 2,
+    send(G, append, X, Y),
+    X1 is X + 1,
+    plot_function(G, X1, To).
+
+% ?- plot_function(_).
+%@ true.
+    

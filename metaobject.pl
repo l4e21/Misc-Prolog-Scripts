@@ -25,9 +25,9 @@ slot(root, make_slots(Self, ID, [(SlotHead, SlotBody)|Slots]),
 % ?- trace(slot/3).
 
 % ?- call_slot(make_obj(root, [(card_name(Self), true)], ID)).
-%@ ID = obj_1.
 
 % ?- slot(obj_1, Head, Body).
-%@ Head = card_name(_),
-%@ Body = true.
 
+% ?- call_slot(make_obj(root, [(card_name(Self, ren), true)])).
+
+% ?- call_slot(make_obj(root, [(deck_card(Self, ren), true)]))
