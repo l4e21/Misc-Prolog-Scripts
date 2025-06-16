@@ -4,8 +4,7 @@
 %% This will need to be used when linking multifiles and dependencies like openGL
 
 %% swipl hello.pl
-%% call_hello(X).
+%% hello(X).
+%% factorial(N, R).
 
 :- use_foreign_library('./hello.so').
-
-call_hello(X) :- hello(X).

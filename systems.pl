@@ -1,4 +1,3 @@
-
 :- use_module(library(clpfd)).
 :- use_module(library(pce)).
 :- use_module(library('plot/plotter')).
@@ -62,32 +61,39 @@ error_integral(Timestep, Error, ErrorIntegral1, ErrorIntegral2) :-
 error_derivative(Timestep, PrevError, Error, D) :-
     D is (Error - PrevError) / Timestep.
 
-plot_pid(PGain, IGain, DGain) :-
-    To is 50,
+pid_correction(PGain, IGain, DGain, P, I, D, Correction) :-
+    Correction is (PGain * P) + (IGain * I) + (DGain * D).
+
+euler(Pos, Vel, Timestep, Force, NewPos, NewVel) :-
+    NewVel is Vel + Force*Timestep - (Vel*0.1),
+    NewPos is Pos + NewVel*Timestep.
+
+plot_pid(G, StartT, EndT, Timestep, Expected, Gains) :-
+    plot_pid(G, StartT, EndT, Timestep, Expected, Gains, 0, 0, 0, 0).
+
+plot_pid(_G, T, EndT, _Timestep, _Expected, _Gains, _Pos, _Vel, _PrevError, _IntegralError) :-
+    T #>= EndT, !.
+
+plot_pid(G, T, EndT, Timestep, Expected, [PGain, IGain, DGain], Pos, Vel, Error, I) :-
+    send(G, append, T, Pos),
+    error(Expected, Pos, NewError),
+    error_integral(Timestep, NewError, I, NewI),
+    error_derivative(Timestep, Error, NewError, D),
+    pid_correction(PGain, IGain, DGain, NewError, NewI, D, Correction),
+    euler(Pos, Vel, Timestep, Correction, NewPos, NewVel), 
+    T1 is (T + 1),
+    format("T=~2f E=~2f D=~2f V=~2f Pos=~2f Corr=~2f~n",
+           [T, NewError, D, Vel, Pos, Correction]),
+    plot_pid(G, T1, EndT, Timestep, Expected, [PGain, IGain, DGain], NewPos, NewVel, Error, NewI).
+
+plot_term(Term, StartX, EndX, StartY, EndY) :-
     new(W, auto_sized_picture('Plotter demo')),
     send(W, display, new(P, plotter)),
-    send(P, axis, plot_axis(x, 0, To, @default, To)),
-    send(P, axis, plot_axis(y, 0, To*5, @default, To*2)),
+    send(P, axis, plot_axis(x, StartX, EndX, @default, 1800)),
+    send(P, axis, plot_axis(y, StartY, EndY, @default, 1200)),
     send(P, graph, new(G, plot_graph)),
-    plot_pid(G, 0, To, 0, 0, 0, PGain, IGain, DGain),
-    send(W, width, 1000),
-    send(W, height, 1000),
+    Term =.. [_, G|_],
+    Term,
     send(W, open).
 
-plot_pid(_G, T, To, _Actual, _PrevError, _IntegralError, _PGain, _IGain, _DGain) :-
-    T #>= To, !.
-
-plot_pid(G, T, To, Actual, PrevError, IntegralError1, PGain, IGain, DGain) :-
-    error(100, Actual, Error),
-    error_integral(1, Error, IntegralError1, IntegralError2),
-    error_derivative(1, PrevError, Error, D),
-    Actual2 is (PGain * Error) + (IGain * IntegralError2) + (DGain * D) + Actual, 
-    %% format('~50f ~50f ~50f ~50f', [Error, IntegralError2, D, Actual2]),
-    %% nl,
-    send(G, append, T, Actual2),
-    T1 is T + 1,
-    plot_pid(G, T1, To, Actual2, Error, IntegralError2, PGain, IGain, DGain).
-    
-% ?- plot_pid(0.5, 0, 0).
-%@ true.
-
+% ?- plot_term(plot_pid(G, 0, 50, 1, 100, [0.01, 0, 0]), 0, 50, 0, 250).
