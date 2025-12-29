@@ -15,3 +15,5 @@ path(A, C, [A-B|Path]) :- edge(A, B), path(B, C, Path).
 
 more_than_3(A) :- A > 3.
 between(A) :- more_than_3(A), A < 6.
+
+arg(X) :- gensym(obj_, X).

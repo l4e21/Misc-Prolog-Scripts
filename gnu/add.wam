@@ -1,31 +1,38 @@
-% compiler: GNU Prolog 1.4.5
+% compiler: GNU Prolog 1.5.0
 % file    : add.pl
 
 
 file_name('/home/jam/prolog/Misc-Prolog-Scripts/gnu/add.pl').
 
 
-predicate(add_two/3,3,static,private,monofile,global,[
+predicate(add_two/3,4,static,private,monofile,global,[
+    get_variable(x(3),2),
+    get_variable(x(2),1),
+    get_variable(x(1),0),
     call_c('Pl_Set_Bip_Name_Untagged_2',[by_value],[is,2]),
-    math_load_value(x(0),0),
-    math_load_value(x(1),1),
-    call_c('Pl_Fct_Add',[fast_call,x(0)],[x(0),x(1)]),
-    get_value(x(2),0),
-    proceed]).
-
-
-predicate(add_three/4,5,static,private,monofile,global,[
-    call_c('Pl_Set_Bip_Name_Untagged_2',[by_value],[is,2]),
-    math_load_value(x(0),0),
-    math_load_value(x(1),1),
-    call_c('Pl_Fct_Add',[fast_call,x(0)],[x(0),x(1)]),
+    math_load_value(x(1),0),
     math_load_value(x(2),1),
     call_c('Pl_Fct_Add',[fast_call,x(0)],[x(0),x(1)]),
     get_value(x(3),0),
     proceed]).
 
 
-predicate(edge/2,8,static,private,monofile,global,[
+predicate(add_three/4,6,static,private,monofile,global,[
+    get_variable(x(4),3),
+    get_variable(x(3),2),
+    get_variable(x(2),1),
+    get_variable(x(1),0),
+    call_c('Pl_Set_Bip_Name_Untagged_2',[by_value],[is,2]),
+    math_load_value(x(1),0),
+    math_load_value(x(2),1),
+    call_c('Pl_Fct_Add',[fast_call,x(0)],[x(0),x(1)]),
+    math_load_value(x(3),1),
+    call_c('Pl_Fct_Add',[fast_call,x(0)],[x(0),x(1)]),
+    get_value(x(4),0),
+    proceed]).
+
+
+predicate(edge/2,9,static,private,monofile,global,[
     switch_on_term(2,1,fail,fail,fail),
 
 label(1),
@@ -56,26 +63,32 @@ label(7),
     proceed]).
 
 
-predicate(path/3,12,static,private,monofile,global,[
+predicate(path/3,13,static,private,monofile,global,[
     try_me_else(1),
+    get_variable(x(3),1),
+    get_variable(x(1),0),
     get_list(2),
-    unify_variable(x(2)),
+    unify_variable(x(0)),
     unify_nil,
-    get_structure((-)/2,2),
-    unify_local_value(x(0)),
+    get_structure((-)/2,0),
     unify_local_value(x(1)),
+    unify_local_value(x(3)),
+    put_value(x(1),0),
+    put_value(x(3),1),
     execute(edge/2),
 
 label(1),
     trust_me_else_fail,
     allocate(3),
     get_variable(y(0),1),
+    get_variable(x(1),0),
     get_list(2),
-    unify_variable(x(1)),
+    unify_variable(x(0)),
     unify_variable(y(2)),
-    get_structure((-)/2,1),
-    unify_local_value(x(0)),
+    get_structure((-)/2,0),
+    unify_local_value(x(1)),
     unify_variable(y(1)),
+    put_value(x(1),0),
     put_value(y(1),1),
     call(edge/2),
     put_value(y(1),0),
@@ -85,15 +98,16 @@ label(1),
     execute(path/3)]).
 
 
-predicate(more_than_3/1,15,static,private,monofile,global,[
+predicate(more_than_3/1,16,static,private,monofile,global,[
+    get_variable(x(1),0),
     call_c('Pl_Set_Bip_Name_Untagged_2',[by_value],[>,2]),
-    math_load_value(x(0),0),
+    math_load_value(x(1),0),
     put_integer(3,1),
     call_c('Pl_Blt_Gt',[fast_call,boolean],[x(0),x(1)]),
     proceed]).
 
 
-predicate(between/1,16,static,private,monofile,global,[
+predicate(between/1,17,static,private,monofile,global,[
     allocate(1),
     get_variable(y(0),0),
     put_value(y(0),0),
@@ -104,3 +118,10 @@ predicate(between/1,16,static,private,monofile,global,[
     call_c('Pl_Blt_Lt',[fast_call,boolean],[x(0),x(1)]),
     deallocate,
     proceed]).
+
+
+predicate(arg/1,19,static,private,monofile,global,[
+    get_variable(x(2),0),
+    put_value(x(2),1),
+    put_atom(obj_,0),
+    execute(gensym/2)]).
