@@ -76,8 +76,8 @@ yaku(_Wind, _Riichi, Closed, Open, _WinningTile, _WinningSeat, mixed_triple_seq)
 % No terminals, no honours
 yaku(_Wind, _Riichi, Closed, Open, _WinningTile, _WinningSeat, all_simples) :-
     append(Closed, Open, Hand),
-    not(hand_tiles(Hand, Tiles), member(Tile, Tiles),
-        (Tile = 1-_; Tile = 9-_; Tile = _-w; Tile = _-d)).
+    not((hand_tiles(Hand, Tiles), member(Tile, Tiles),
+         (Tile = 1-_; Tile = 9-_; Tile = _-w; Tile = _-d))).
 
 % sequences 1-3, 4-6, and 7-9 of same suit
 yaku(_Wind, _Riichi, Closed, Open, _WinningTile, _WinningSeat, pure_straight) :-
@@ -101,6 +101,13 @@ yaku(_Wind, _Riichi, Closed, Open, _WinningTile, _WinningSeat, half_flush) :-
             (kind(Tile, w); kind(Tile, d); kind(Tile, m))
            )).
     
+tenpai(Wind, Riichi, ClosedL, OpenL, Seat, Waits, Yaku) :-
+    member(WinningTile, Waits),
+    hand_tiles(Closed, ClosedL),
+    print(Closed),
+    hand_tiles(Open, OpenL),
+    yaku(Wind, Riichi, Closed, Open, WinningTile, Seat, Yaku).
+
 
 game(0).
 date_played(0, date(2025, 12, 30)).
@@ -119,7 +126,7 @@ won(round(0,
                  seq(5-sr, 6-s, 7-s)],
                 [triplet(9-p, 9-p, 9-p),
                  triplet(g-d, g-d, g-d)]),
-           5-s)).
+           5-sr)).
 won(round(0,
           east-2,
           0,
