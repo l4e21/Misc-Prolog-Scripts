@@ -29,12 +29,7 @@ load_image(File) :-
 save_image(File) :-
     setup_call_cleanup(
         open(File, write, S, [encoding(utf8)]),
-        (
-            findall(T-E, event(T,E), Pairs0),
-            keysort(Pairs0, Pairs),
-            forall(member(T-E, Pairs),
-                   portray_clause(S, event(T, E)))
-        ),
+        with_output_to(S, listing(event/2)),
         close(S)
     ).
 
